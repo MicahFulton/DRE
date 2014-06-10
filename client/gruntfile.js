@@ -69,7 +69,7 @@ module.exports = function(grunt) {
       vendor: {
         files: [{
           dest: '<%= distdir %>/fonts',
-          src: ['bootstrap/fonts/*'],
+          src: ['bootstrap/fonts/*', 'font-awesome/fonts/*'],
           expand: true,
           flatten: true,
           cwd: 'src/vendor'
@@ -92,7 +92,7 @@ module.exports = function(grunt) {
         }
       },
       css: {
-        src: ['src/vendor/bootstrap/css/bootstrap.min.css', 'src/vendor/font-awesome/font-awesome.min.css', 'src/vendor/fontello/css/merging.css'],
+        src: ['src/vendor/bootstrap/css/bootstrap.min.css', 'src/vendor/font-awesome/css/font-awesome.min.css'],
         dest: '<%= distdir %>/<%= pkg.name %>.css'
       },
       angular: {
