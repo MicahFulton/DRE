@@ -35,7 +35,9 @@
     "grunt": "0.4.x",
     "grunt-contrib-jshint": "0.8.x",
     "grunt-contrib-watch": "0.6.x",
+    "grunt-coveralls": "^0.3.0",
     "grunt-express-server": "0.4.x",
+    "grunt-istanbul-coverage": "0.0.5",
     "grunt-mocha-test": "0.10.x",
     "mocha": "1.18.x",
     "supertest": "0.10.0"

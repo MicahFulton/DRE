@@ -4,6 +4,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-express-server');
+    grunt.loadNpmTasks('grunt-istanbul-coverage');
+    grunt.loadNpmTasks('grunt-coveralls');
 
     grunt.registerTask('default', ['jshint', 'express:dev', 'mochaTest']);
 
@@ -60,6 +62,33 @@ module.exports = function(grunt) {
                     timeout: '10000'
                 },
                 src: ['test/unit/*.js', 'test/e2e/**/*.js', 'test/e2e/*.js']
+            }
+        },
+        coveralls: {
+            options: {
+                // LCOV coverage file relevant to every target
+                src: 'coverage/lcov.info',
+
+                // When true, grunt-coveralls will only print a warning rather than
+                // an error, to prevent CI builds from failing unnecessarily (e.g. if
+                // coveralls.io is down). Optional, defaults to false.
+                force: false
+            },
+            //your_target: {
+            // Target-specific LCOV coverage file
+            //src: 'coverage-results/extra-results-*.info'
+            //},
+        },
+        coverage: {
+            options: {
+                thresholds: {
+                    'statements': 50,
+                    'branches': 25,
+                    'lines': 50,
+                    'functions': 50
+                },
+                dir: 'coverage/',
+                root: '.'
             }
         }
     });
