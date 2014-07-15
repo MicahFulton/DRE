@@ -24,4 +24,4 @@ script:
     - grunt --gruntfile server/gruntfile.js
     #- istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
     #- istanbul cover ./server/node_modules/mocha/bin/_mocha ./server/test --recursive --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./server/node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
-    - cd server && istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
+    - cd server && istanbul cover ./node_modules/mocha/bin/_mocha test/**/*.js --recursive --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage
