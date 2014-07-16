@@ -23,7 +23,7 @@
 						</thead>
 						<tbody>
 							<tr ng-repeat="attribution in immunization.metadata.attribution">
-								<td><strong>Source:</strong>  <a ng-click="dismissModal($parent.$index)" data-dismiss="modal" style="cursor: pointer;">{{attribution.record_id.filename}}</a></td>
+								<td><strong>Source:</strong>  <a ng-click="dismissModal($parent.$index)" data-dismiss="modal" style="cursor: pointer;">{{attribution.record.filename}}</a></td>
 								<td><strong>Status:</strong>  <span style="text-transform: capitalize;">{{attribution.merge_reason}}</span></td>
 								<td><strong>Merged:</strong>  {{attribution.merged | date: 'short'}}</td>
 							</tr>
@@ -64,6 +64,24 @@
 						<div class="col-md-2 pull-left" style="margin-bottom: 10px;" ng-show="immunization.product.product.code_system_name">
 							<div class="pull-left col-md-12"><strong>Product Code System:</strong></div><br/>
 							<div class="pull-left col-md-12">{{immunization.product.product.code_system_name}}</div>
+						</div>
+					</div>
+
+					<div class="col-md-12" ng-show="immunization.product.product.translations">
+						<h4>Other Descriptions</h4>
+						<div ng-repeat=" translation in immunization.product.product.translations" class="col-md-12">
+							<div class="col-md-2 pull-left" style="margin-bottom: 10px;" ng-show="translation.name">
+								<div class="pull-left col-md-12"><strong>Name:</strong></div><br/>
+								<div class="pull-left col-md-12">{{translation.name}}</div>
+							</div>
+							<div class="col-md-2 pull-left" style="margin-bottom: 10px;" ng-show="translation.code">
+								<div class="pull-left col-md-12"><strong>Code:</strong></div><br/>
+								<div class="pull-left col-md-12">{{translation.code}}</div>
+							</div>
+							<div class="col-md-2 pull-left" style="margin-bottom: 10px;" ng-show="translation.code_system_name">
+								<div class="pull-left col-md-12"><strong>Code System:</strong></div><br/>
+								<div class="pull-left col-md-12">{{translation.code_system_name}}</div>
+							</div>
 						</div>
 					</div>
 

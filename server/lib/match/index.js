@@ -7,22 +7,22 @@ var supportedComponents = ['allergies', 'procedures', 'immunizations', 'medicati
 
 function updateMerged(updateId, updateComponent, updateParameters, callback) {
     //Gather full match object by ID.
-    record.getMatch(updateComponent, updateId, function(err, resultComponent) {
+    record.getMatch(updateComponent, 'test', updateId, function(err, resultComponent) {
         if (err) {
             callback(err);
         } else {
             //Gather partial record from db.
-            record.getEntry(updateComponent, resultComponent.match_entry_id._id, function(err, recordResults) {
+            record.getEntry(updateComponent, 'test', resultComponent.match_entry._id, function(err, recordResults) {
                 if (err) {
                     callback(err);
                 } else {
                     //NOTE:  Only one attribution merge since a partial.
-                    var recordId = recordResults.metadata.attribution[0].record_id;
-                    record.updateEntry(updateComponent, resultComponent.entry_id, recordId, updateParameters, function(err, updateResults) {
+                    var recordId = recordResults.metadata.attribution[0].record._id;
+                    record.updateEntry(updateComponent, 'test', resultComponent.entry._id, recordId, updateParameters, function(err, updateResults) {
                         if (err) {
                             callback(err);
                         } else {
-                            record.cancelMatch(updateComponent, updateId, 'merged', callback);
+                            record.cancelMatch(updateComponent, 'test', updateId, 'merged', callback);
                         }
                     });
                 }
@@ -38,7 +38,7 @@ function processUpdate(updateId, updateComponent, updateParameters, callback) {
         if (updateComponent === 'demographics') {
             callback('Only one demographic accepted');
         }
-        record.acceptMatch(updateComponent, updateId, 'added', callback);
+        record.acceptMatch(updateComponent, 'test', updateId, 'added', callback);
     }
 
     if (updateParameters.determination === 'merged') {
@@ -53,7 +53,7 @@ function processUpdate(updateId, updateComponent, updateParameters, callback) {
     }
 
     if (updateParameters.determination === 'ignored') {
-        record.cancelMatch(updateComponent, updateId, 'ignored', callback)
+        record.cancelMatch(updateComponent, 'test', updateId, 'ignored', callback)
     }
 }
 
@@ -73,53 +73,41 @@ function formatName(inputName) {
     return inputName;
 }
 
-
-function formatMerges(inputMerge) {
-    for (var iMerge in inputMerge) {
-        //Give Immunizations a name
-        if (inputMerge[iMerge].entry_type === 'immunization') {
-            if (inputMerge[iMerge].entry_id.product.name) {
-                inputMerge[iMerge].entry_id.name = inputMerge[iMerge].entry_id.product.name;
-            }
-            if (inputMerge[iMerge].match_entry_id.product.name) {
-                inputMerge[iMerge].match_entry_id.name = inputMerge[iMerge].match_entry_id.product.name;
-            }
-
+var formatSectionEntry = {
+    immunizations: function(entry) {
+        if (entry.product.name) {
+            entry.name = entry.product.name;
         }
-        //Give Medications a name
-        if (inputMerge[iMerge].entry_type === 'medication') {
-            if (inputMerge[iMerge].entry_id.product.name) {
-                inputMerge[iMerge].entry_id.name = inputMerge[iMerge].entry_id.product.name;
-            }
-            if (inputMerge[iMerge].match_entry_id.product.name) {
-                inputMerge[iMerge].match_entry_id.name = inputMerge[iMerge].match_entry_id.product.name;
-            }
+    },
+    medications: function(entry) {
+        if (entry.product.name) {
+            entry.name = entry.product.name;
         }
-        //Give Socials a name
-        if (inputMerge[iMerge].entry_type === 'social') {
-            if (inputMerge[iMerge].entry_id.value) {
-                inputMerge[iMerge].entry_id.name = inputMerge[iMerge].entry_id.value;
-            }
-            if (inputMerge[iMerge].match_entry_id.value) {
-                inputMerge[iMerge].match_entry_id.name = inputMerge[iMerge].match_entry_id.value;
-            }
+    },
+    social_history: function(entry) {
+        if (entry.value) {
+            entry.name = entry.value;
         }
-        //Give Demographics a name
-        if (inputMerge[iMerge].entry_type === 'demographic') {
-            var tmpName;
-            if (inputMerge[iMerge].entry_id.name) {
-                tmpName = formatName(inputMerge[iMerge].entry_id.name).displayName;
-                inputMerge[iMerge].entry_id.name = tmpName;
-            }
-            if (inputMerge[iMerge].match_entry_id.name) {
-                tmpName = formatName(inputMerge[iMerge].match_entry_id.name).displayName;
-                inputMerge[iMerge].match_entry_id.name = tmpName;
-            }
+    },
+    demographics: function(entry) {
+        if (entry.name) {
+            var tmpName = formatName(entry.name).displayName;
+            entry.name = tmpName;
         }
     }
 }
 
-//Get all merges API.
+function formatSectionEntries(secName, inputMerge) {
+    var formatEntry = formatSectionEntry[secName];
+    if (formatEntry) {
+        for (var iMerge in inputMerge) {
+            formatEntry(inputMerge[iMerge].entry);
+            formatEntry(inputMerge[iMerge].match_entry);
+        }
+    }
+}
+
+// Get all matches API.
 app.get('/api/v1/matches/:component', function(req, res) {
 
     if (_.contains(supportedComponents, req.params.component) === false) {
@@ -132,13 +120,27 @@ app.get('/api/v1/matches/:component', function(req, res) {
             } else {
                 var matchJSON = {};
                 matchJSON.matches = matchList;
-                formatMerges(matchJSON.matches);
+                formatSectionEntries(req.params.component, matchJSON.matches);
                 res.send(matchJSON);
             }
         });
     }
 });
 
+// Get single match API.
+app.get('/api/v1/match/:component/:record_id', function(req, res) {
+    if (_.contains(supportedComponents, req.params.component) === false) {
+        res.send(404);
+    } else {
+        record.getMatch(req.params.component, 'test', req.params.record_id, function(err, match) {
+            if (err) {
+                res.send(400, err);
+            } else {
+                res.send(match);
+            }
+        });
+    }
+});
 
 //Post partial record updates.
 app.post('/api/v1/matches/:component/:record_id', function(req, res) {
